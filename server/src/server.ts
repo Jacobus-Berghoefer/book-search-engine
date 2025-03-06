@@ -3,6 +3,7 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import path from 'path';  // Import path module
 import db from './config/connection.js';
 
 import { typeDefs } from './schemas/typeDefs.js';
@@ -15,15 +16,25 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const { json } = bodyParser;
 
-// Add Express Middleware Before Apollo
+// Add Middleware
 app.use(cors());
-app.use(express.json()); // Allow JSON requests
+app.use(express.json());
 
-app.get('/', (_req, res) => {
+// Serve static frontend files from the "client/dist" folder
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+// Add a Root Route for API
+app.get('/api', (_req, res) => {
   res.send('📚 Book Search Engine API is running! Access GraphQL at `/graphql`.');
 });
 
-// Create an instance of Apollo Server
+// Serve React App for All Other Routes
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
+// Create Apollo Server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -46,7 +57,7 @@ async function startServer() {
 
   console.log("🟡 Express setup complete, waiting for MongoDB...");
 
-  // ✅ Ensure Server Starts Even if MongoDB Takes Time
+  // Start Server
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}/graphql`);
     console.log("📡 Waiting for API requests...");
@@ -62,3 +73,4 @@ async function startServer() {
 }
 
 startServer();
+
