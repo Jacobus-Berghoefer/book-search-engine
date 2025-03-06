@@ -19,6 +19,10 @@ const { json } = bodyParser;
 app.use(cors());
 app.use(express.json()); // Allow JSON requests
 
+app.get('/', (_req, res) => {
+  res.send('📚 Book Search Engine API is running! Access GraphQL at `/graphql`.');
+});
+
 // Create an instance of Apollo Server
 const server = new ApolloServer({
   typeDefs,
